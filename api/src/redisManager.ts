@@ -20,7 +20,7 @@ export class RedisManager {
         return this.instance;
     }
 
-    public subscribeAndPushToQueue(message: messageToEngine){
+    public sendAndAwait(message: messageToEngine){
         return new Promise<MessageFromOrderbook>((resolve)=>{
             const id = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
 
