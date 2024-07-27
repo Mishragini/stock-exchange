@@ -29,7 +29,8 @@ export class RedisManager {
                 resolve(JSON.parse(message))
             });
 
-            this.publisher.lPush("orders", JSON.stringify({orderId:id, message}))
+            this.publisher.lPush("messages", JSON.stringify({orderId:id, message}))
         })
     }
+    
 }

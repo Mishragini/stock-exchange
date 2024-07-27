@@ -28,7 +28,8 @@ export type messageToEngine = {
     type: "ON_RAMP",
     data:{
         userId: string,
-        amount: number
+        amount: number,
+        txnId: string
     }
 } | {
     type:"GET_DEPTH",
@@ -80,7 +81,7 @@ export type MessageFromOrderbook = {
 } | {
     type: "USER_BALANCE" ,
     payload: {
-        totalBalance: number,
+        availableBalance: number,
         lockedBalance: number
     }
 } | {
