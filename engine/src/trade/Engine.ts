@@ -128,7 +128,51 @@ export class Engine {
                     console.log("Error while cancelling order");
                     console.log(e);
                 }
-                break;    
+                break;  
+            case 'GET_OPEN_ORDERS':
+                try {
+                    const openOrderbook = this.orderbooks.find(o => o.ticker() === message.data.market);
+                    if(!openOrderbook){
+                        throw new Error("No orderbook found");
+                    }
+                    const openOrders = openOrderbook.getOpenOrders(message.data.userId);
+
+                    RedisManager.getInstance().sendToApi(clientId,{
+                        type:"OPEN_ORDERS",
+                        payload: openOrders
+                    })
+                } catch(e) {
+                    console.log(e);
+                }  
+                break;
+            case 'ON_RAMP':
+                  const userId = message.data.userId;
+                  const amount = message.data.amount;
+                  this.onRamp(userId, amount);
+                  break; 
+            case 'GET_DEPTH':
+                try{
+                    const market = message.data.market;
+                    const orderbook = this.orderbooks.find(o => o.ticker() === market);
+
+                    if (!orderbook) {
+                        throw new Error("No orderbook found");
+                    }
+                    RedisManager.getInstance().sendToApi(clientId, {
+                        type: "DEPTH",
+                        payload: orderbook.getDepth()
+                    });
+                }catch(e) {
+                    console.log(e);
+                    RedisManager.getInstance().sendToApi(clientId, {
+                        type: "DEPTH",
+                        payload: {
+                            bids: [],
+                            asks: []
+                        }
+                    });
+                }
+                break;          
         }
     }
 
@@ -372,6 +416,20 @@ export class Engine {
                 e: "depth"
             }
         });
+    }
+
+    onRamp(userId: string, amount: number) {
+        const userBalance = this.balances.get(userId);
+        if (!userBalance) {
+            this.balances.set(userId, {
+                [BASE_CURRENCY]: {
+                    available: amount,
+                    locked: 0
+                }
+            });
+        } else {
+            userBalance[BASE_CURRENCY].available += amount;
+        }
     }
 
     setBaseBalances() {
